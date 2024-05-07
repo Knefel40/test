@@ -67,3 +67,86 @@ print()
 import random
 liczba = random.randint(1,100) #poczatek i koniec wchodza
 print(liczba)
+
+
+
+
+
+
+import pygame
+import random
+
+# Inicjalizacja Pygame
+pygame.init()
+
+# Ustawienia okna gry
+WIDTH, HEIGHT = 600, 400
+win = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Unikaj Przeszkód")
+
+# Kolory
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+# Ustawienia gracza
+player_width, player_height = 50, 50
+player_x, player_y = WIDTH // 2 - player_width // 2, HEIGHT - player_height - 20
+player_speed = 5
+
+# Ustawienia przeszkód
+obstacle_width, obstacle_height = 50, 50
+obstacle_speed = 5
+obstacle_frequency = 25  # co ile klatek pojawia się nowa przeszkoda
+obstacles = []
+
+# Licznik punktów
+score = 0
+font = pygame.font.SysFont("Arial", 30)
+
+clock = pygame.time.Clock()
+
+# Główna pętla gry
+running = True
+while running:
+    clock.tick(30)
+    
+    # Obsługa zdarzeń
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Ruch gracza
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player_x > 0:
+        player_x -= player_speed
+    if keys[pygame.K_RIGHT] and player_x < WIDTH - player_width:
+        player_x += player_speed
+
+    # Generowanie przeszkód
+    if random.randint(1, obstacle_frequency) == 1:
+        obstacle_x = random.randrange(0, WIDTH - obstacle_width)
+        obstacle_y = -obstacle_height
+        obstacles.append([obstacle_x, obstacle_y])
+
+    # Ruch przeszkód i sprawdzenie kolizji
+    for obstacle in obstacles:
+        obstacle[1] += obstacle_speed
+        if obstacle[1] > HEIGHT:
+            obstacles.remove(obstacle)
+            score += 1
+        obstacle_rect = pygame.Rect(obstacle[0], obstacle[1], obstacle_width, obstacle_height)
+        player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+        if player_rect.colliderect(obstacle_rect):
+            running = False
+
+    # Rysowanie wszystkiego na ekranie
+    win.fill(WHITE)
+    pygame.draw.rect(win, RED, (player_x, player_y, player_width, player_height))
+    for obstacle in obstacles:
+        pygame.draw.rect(win, RED, (obstacle[0], obstacle[1], obstacle_width, obstacle_height))
+    score_text = font.render("Punkty: " + str(score), True, RED)
+    win.blit(score_text, (10, 10))
+
+    pygame.display.update()
+
+pygame.quit()
